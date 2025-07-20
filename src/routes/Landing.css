@@ -1,0 +1,15 @@
+.landing {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px;
+  font-family: sans-serif;
+}
+.landing section {
+  margin-bottom: 32px;
+}
+.landing .hero {
+  background: #e0f7fa;
+  padding: 24px;
+  border-radius: 12px;
+  text-align: center;
+} 
