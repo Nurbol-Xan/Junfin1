@@ -26,6 +26,7 @@ import {
 
 // Import admin pages
 import AdminFamilies from './AdminFamilies';
+import AdminCatalog from './AdminCatalog';
 
 const mockUser = { name: 'Admin', avatar: '/images/user-def.png' };
 
@@ -224,7 +225,7 @@ const AdminDashboard = () => {
       <Routes>
         <Route path="/" element={<AdminHome />} />
         <Route path="/families" element={<AdminFamilies />} />
-        <Route path="/catalog" element={<div>Catalog page coming soon...</div>} />
+        <Route path="/catalog" element={<AdminCatalog />} />
         <Route path="/analytics" element={<div>Analytics page coming soon...</div>} />
         <Route path="/localization" element={<div>Localization page coming soon...</div>} />
         <Route path="/settings" element={<div>Settings page coming soon...</div>} />

@@ -84,5 +84,18 @@
   "search": "Qidirish",
   "notifications": "Bildirishnomalar",
   "help": "Yordam",
-  "version": "Versiya"
+  "version": "Versiya",
+  "catalog_management": "Katalog boshqaruvi",
+  "shop_catalog": "Do'kon katalogi",
+  "my_tasks": "Mening vazifalarim",
+  "goals": "Maqsadlar",
+  "shop": "Do'kon",
+  "history": "Tarix",
+  "points": "Ballar",
+  "families": "Oilalar",
+  "tasks": "Vazifalar",
+  "children": "Bolalar",
+  "limits": "Cheklovlar",
+  "reports": "Hisobotlar",
+  "users": "Foydalanuvchilar"
 }
