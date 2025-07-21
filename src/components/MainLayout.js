@@ -4,7 +4,7 @@ import Sidebar from './Sidebar';
 import Footer from './Footer';
 import { Box, useTheme, useMediaQuery } from '@mui/material';
 
-const drawerWidth = 240;
+const drawerWidth = 280;
 
 const MainLayout = ({ user, role, onLogout, onNavigate, children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -12,7 +12,7 @@ const MainLayout = ({ user, role, onLogout, onNavigate, children }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f7faff' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#fafbfc' }}>
       <Sidebar
         user={user}
         role={role}
@@ -36,6 +36,7 @@ const MainLayout = ({ user, role, onLogout, onNavigate, children }) => {
         }}>
           <Navbar
             user={user}
+            role={role}
             onLogout={onLogout}
             onSidebarOpen={() => setSidebarOpen(true)}
           />
@@ -45,9 +46,11 @@ const MainLayout = ({ user, role, onLogout, onNavigate, children }) => {
           component="main"
           sx={{
             flexGrow: 1,
-            p: { xs: 1, sm: 2, md: 3 },
-            mt: '64px',
+            p: { xs: 2, sm: 3, md: 4 },
+            mt: '72px',
             width: '100%',
+            backgroundColor: '#fafbfc',
+            minHeight: 'calc(100vh - 72px)'
           }}
         >
           {children}
