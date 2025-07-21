@@ -1,7 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import MainLayout from '../components/MainLayout';
+import ChildThemeSelector from './ChildThemeSelector';
+import ChildTasks from './ChildTasks';
+import ChildShop from './ChildShop';
 import { useTranslation } from 'react-i18next';
+import { getCurrentTheme, initializeThemeSystem } from '../utils/themeSystem';
+import { getCurrentUser, getJunCoinBalance, getTasks, getGoals, getJunCoinStats } from '../utils/juncoinSystem';
 import { 
   Container, 
   Typography, 
@@ -19,478 +24,441 @@ import {
   ListItemText,
   ListItemAvatar,
   Button,
-  Badge
+  IconButton,
+  Fab,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 import {
-  EmojiEvents as EmojiEventsIcon,
-  Assignment as AssignmentIcon,
+  EmojiEvents as TrophyIcon,
+  Assignment as TaskIcon,
+  MonetizationOn as CoinIcon,
+  TrendingUp as TrendingIcon,
   Star as StarIcon,
-  AccountBalance as AccountBalanceIcon,
-  ShoppingCart as ShoppingCartIcon,
-  CheckCircle as CheckCircleIcon,
-  Schedule as ScheduleIcon,
-  Celebration as CelebrationIcon,
-  TrendingUp as TrendingUpIcon
+  School as SchoolIcon,
+  Sports as SportsIcon,
+  Palette as PaletteIcon,
+  Settings as SettingsIcon,
+  Home as HomeIcon,
+  ShoppingCart as ShopIcon,
+  History as HistoryIcon,
+  Target as GoalIcon
 } from '@mui/icons-material';
-import userDef from '../images/user-def.png';
-import coin from '../images/coin-img.png';
 
-const mockUser = { name: 'Ali', avatar: userDef };
+const mockUser = { 
+  name: 'Bola', 
+  avatar: '/images/user-def.png'
+};
 
 const ChildHome = () => {
   const { t } = useTranslation();
+  const [currentTheme, setCurrentTheme] = useState(getCurrentTheme());
+  const [showThemeSelector, setShowThemeSelector] = useState(false);
+  const [userStats, setUserStats] = useState(null);
+  const [tasks, setTasks] = useState([]);
+  const [goals, setGoals] = useState([]);
 
-  // Demo ma'lumotlar
-  const goals = [
-    { 
-      id: 1,
-      title: t('child_goal1'), 
-      current: 800, 
-      target: 1000,
-      icon: '🚲',
-      priority: 'high',
-      daysLeft: 15
-    },
-    { 
-      id: 2,
-      title: t('child_goal2'), 
-      current: 300, 
-      target: 500,
-      icon: '🧱',
-      priority: 'medium',
-      daysLeft: 30
-    },
-    {
-      id: 3,
-      title: 'Yangi video o\'yin',
-      current: 150,
-      target: 350,
-      icon: '🎮',
-      priority: 'low',
-      daysLeft: 45
-    }
-  ];
+  useEffect(() => {
+    initializeThemeSystem();
+    loadUserData();
+  }, []);
 
-  const tasks = [
-    { 
-      id: 1,
-      title: t('child_task1'), 
-      reward: 100, 
-      done: true,
-      difficulty: 'easy',
-      timeLeft: '0 soat',
-      category: 'Ta\'lim'
-    },
-    { 
-      id: 2,
-      title: t('child_task2'), 
-      reward: 200, 
-      done: false,
-      difficulty: 'medium',
-      timeLeft: '2 soat',
-      category: 'Yordam'
-    },
-    {
-      id: 3,
-      title: 'Sport bilan shug\'ullanish',
-      reward: 150,
-      done: false,
-      difficulty: 'easy',
-      timeLeft: '1 kun',
-      category: 'Salomatlik'
-    },
-    {
-      id: 4,
-      title: 'Kitob o\'qish',
-      reward: 120,
-      done: true,
-      difficulty: 'medium',
-      timeLeft: '0 soat',
-      category: 'Ta\'lim'
-    }
-  ];
-
-  const achievements = [
-    { title: 'Birinchi maqsad', icon: '🏆', earned: true },
-    { title: 'Vazifalar ustasi', icon: '⭐', earned: true },
-    { title: 'Tejamkor', icon: '💰', earned: false },
-    { title: 'Super bola', icon: '🚀', earned: false }
-  ];
-
-  const userStats = {
-    totalBalance: 850,
-    completedTasks: tasks.filter(task => task.done).length,
-    totalTasks: tasks.length,
-    level: 'Bronza',
-    experience: 1250,
-    nextLevelExp: 2000,
-    rank: 3
+  const loadUserData = () => {
+    const stats = getJunCoinStats();
+    const userTasks = getTasks();
+    const userGoals = getGoals();
+    
+    setUserStats(stats);
+    setTasks(userTasks);
+    setGoals(userGoals);
   };
 
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'high': return 'error';
-      case 'medium': return 'warning';
-      case 'low': return 'info';
-      default: return 'default';
-    }
+  const handleThemeChange = (newTheme) => {
+    setCurrentTheme(newTheme);
+    // Reload page to apply new theme
+    window.location.reload();
   };
 
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case 'easy': return 'success';
-      case 'medium': return 'warning';
-      case 'hard': return 'error';
-      default: return 'default';
-    }
-  };
+  const recentTasks = tasks.slice(0, 3);
+  const recentGoals = goals.slice(0, 2);
+  const completedTasks = tasks.filter(task => task.completed).length;
+  const totalTasks = tasks.length;
+  const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      {/* Header with Level Progress */}
-      <Paper 
-        sx={{ 
-          p: 4, 
-          mb: 4, 
-          background: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)',
-          color: 'white',
-          borderRadius: 4
-        }}
-      >
-        <Grid container spacing={3} alignItems="center">
-          <Grid item xs={12} md={4}>
-            <Stack direction="row" alignItems="center" spacing={3}>
-              <Badge
-                badgeContent={userStats.rank}
-                color="warning"
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: currentTheme.background,
+        py: 4
+      }}
+    >
+      <Container maxWidth="xl">
+        {/* Welcome Section */}
+        <Box sx={{ mb: 4 }}>
+          <Stack direction="row" alignItems="center" justifyContent="space-between">
+            <Box>
+              <Typography 
+                variant="h4" 
+                fontWeight={800} 
+                gutterBottom
+                sx={{ color: currentTheme.textPrimary }}
               >
-                <Avatar 
-                  src={mockUser.avatar} 
-                  sx={{ 
-                    width: 80, 
-                    height: 80,
-                    border: '4px solid rgba(255,255,255,0.3)'
-                  }} 
-                />
-              </Badge>
-              <Box>
-                <Typography variant="h4" fontWeight={800} gutterBottom>
-                  Salom, {mockUser.name}!
-                </Typography>
-                <Chip 
-                  label={`${userStats.level} daraja`} 
-                  sx={{ 
-                    bgcolor: 'rgba(255,255,255,0.2)', 
-                    color: 'white',
-                    fontWeight: 600
-                  }}
-                />
-              </Box>
-            </Stack>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Box textAlign="center">
-              <Typography variant="h3" fontWeight={900}>
-                {userStats.totalBalance}
+                {currentTheme.icons?.dashboard} Salom, {mockUser.name}!
               </Typography>
-              <Typography variant="body1" sx={{ opacity: 0.9 }}>
-                Jami ballaringiz
+              <Typography 
+                variant="h6" 
+                sx={{ color: currentTheme.textSecondary }}
+              >
+                Bugun nima qilamiz? 🚀
               </Typography>
             </Box>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Box>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                <Typography variant="body2">Keyingi daraja uchun</Typography>
-                <Typography variant="body2" fontWeight={600}>
-                  {userStats.experience}/{userStats.nextLevelExp} XP
-                </Typography>
-              </Stack>
-              <LinearProgress 
-                variant="determinate" 
-                value={(userStats.experience / userStats.nextLevelExp) * 100}
-                sx={{ 
-                  height: 10, 
-                  borderRadius: 5,
-                  bgcolor: 'rgba(255,255,255,0.2)',
-                  '& .MuiLinearProgress-bar': {
-                    bgcolor: '#fff'
+            
+            <Stack direction="row" spacing={2}>
+              <IconButton
+                onClick={() => setShowThemeSelector(true)}
+                sx={{
+                  bgcolor: currentTheme.primary,
+                  color: 'white',
+                  '&:hover': {
+                    bgcolor: currentTheme.secondary,
+                    transform: 'scale(1.1)'
                   }
                 }}
-              />
-            </Box>
+              >
+                <PaletteIcon />
+              </IconButton>
+              
+              <Card sx={{ p: 2, background: currentTheme.cardBackground }}>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <CoinIcon sx={{ color: 'warning.main', fontSize: 32 }} />
+                  <Box>
+                    <Typography variant="h5" fontWeight={800} color="warning.main">
+                      {userStats?.currentBalance || 0}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      JunCoin
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Card>
+            </Stack>
+          </Stack>
+        </Box>
+
+        {/* Stats Cards */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card 
+              sx={{ 
+                background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.secondary} 100%)`,
+                color: 'white',
+                height: '100%'
+              }}
+            >
+              <CardContent>
+                <Stack direction="row" alignItems="center" spacing={2}>
+                  <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}>
+                    <TaskIcon />
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h4" fontWeight={800}>
+                      {completedTasks}/{totalTasks}
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                      Vazifalar
+                    </Typography>
+                  </Box>
+                </Stack>
+                <LinearProgress
+                  variant="determinate"
+                  value={progressPercentage}
+                  sx={{
+                    mt: 2,
+                    height: 6,
+                    borderRadius: 3,
+                    backgroundColor: 'rgba(255,255,255,0.3)',
+                    '& .MuiLinearProgress-bar': {
+                      backgroundColor: 'white'
+                    }
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <Card sx={{ background: currentTheme.cardBackground, height: '100%' }}>
+              <CardContent>
+                <Stack direction="row" alignItems="center" spacing={2}>
+                  <Avatar sx={{ bgcolor: 'warning.main' }}>
+                    <CoinIcon />
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h4" fontWeight={800} color="warning.main">
+                      {userStats?.totalEarned || 0}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Jami topilgan
+                    </Typography>
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <Card sx={{ background: currentTheme.cardBackground, height: '100%' }}>
+              <CardContent>
+                <Stack direction="row" alignItems="center" spacing={2}>
+                  <Avatar sx={{ bgcolor: 'success.main' }}>
+                    <TrophyIcon />
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h4" fontWeight={800}>
+                      {goals.filter(g => g.achieved).length}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Maqsadlar
+                    </Typography>
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <Card sx={{ background: currentTheme.cardBackground, height: '100%' }}>
+              <CardContent>
+                <Stack direction="row" alignItems="center" spacing={2}>
+                  <Avatar sx={{ bgcolor: 'info.main' }}>
+                    <StarIcon />
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h4" fontWeight={800}>
+                      {Math.round(progressPercentage)}%
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Muvaffaqiyat
+                    </Typography>
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
           </Grid>
         </Grid>
-      </Paper>
 
-      <Grid container spacing={4}>
-        {/* Goals Section */}
-        <Grid item xs={12} lg={6}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-                <EmojiEventsIcon sx={{ fontSize: 32, color: 'warning.main' }} />
-                <Typography variant="h5" fontWeight={700}>
-                  {t('my_goals')}
+        {/* Quick Actions */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} md={6}>
+            <Card sx={{ background: currentTheme.cardBackground, height: '100%' }}>
+              <CardContent>
+                <Typography variant="h6" fontWeight={700} gutterBottom>
+                  Tezkor amallar
                 </Typography>
-              </Stack>
-              
-              <Grid container spacing={2}>
-                {goals.map((goal) => (
-                  <Grid item xs={12} key={goal.id}>
-                    <Paper 
-                      sx={{ 
-                        p: 3, 
-                        bgcolor: 'grey.50',
-                        borderRadius: 3,
-                        border: goal.priority === 'high' ? '2px solid #f44336' : '1px solid #e0e0e0'
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      startIcon={currentTheme.icons?.tasks}
+                      onClick={() => window.location.href = '/uz/child/tasks'}
+                      sx={{
+                        background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
+                        py: 1.5
                       }}
                     >
-                      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
-                        <Typography variant="h4">{goal.icon}</Typography>
-                        <Box sx={{ flex: 1 }}>
-                          <Typography variant="h6" fontWeight={700}>
+                      Vazifalar
+                    </Button>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      startIcon={currentTheme.icons?.shop}
+                      onClick={() => window.location.href = '/uz/child/shop'}
+                      sx={{
+                        background: `linear-gradient(135deg, ${currentTheme.secondary} 0%, ${currentTheme.accent} 100%)`,
+                        py: 1.5
+                      }}
+                    >
+                      Do'kon
+                    </Button>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      startIcon={currentTheme.icons?.goals}
+                      onClick={() => window.location.href = '/uz/child/goals'}
+                      sx={{ py: 1.5 }}
+                    >
+                      Maqsadlar
+                    </Button>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      startIcon={currentTheme.icons?.history}
+                      onClick={() => window.location.href = '/uz/child/history'}
+                      sx={{ py: 1.5 }}
+                    >
+                      Tarix
+                    </Button>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Card sx={{ background: currentTheme.cardBackground, height: '100%' }}>
+              <CardContent>
+                <Typography variant="h6" fontWeight={700} gutterBottom>
+                  So'nggi vazifalar
+                </Typography>
+                {recentTasks.length > 0 ? (
+                  <List>
+                    {recentTasks.map((task, index) => (
+                      <ListItem key={index} divider>
+                        <ListItemAvatar>
+                          <Avatar sx={{ 
+                            bgcolor: task.completed ? 'success.main' : currentTheme.primary,
+                            width: 32,
+                            height: 32
+                          }}>
+                            {task.completed ? '✓' : currentTheme.icons?.tasks}
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={task.title}
+                          secondary={`${task.reward || 100} JunCoin`}
+                        />
+                        {task.completed && (
+                          <Chip label="Bajarildi" color="success" size="small" />
+                        )}
+                      </ListItem>
+                    ))}
+                  </List>
+                ) : (
+                  <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+                    Hozircha vazifalar yo'q
+                  </Typography>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Goals Section */}
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Card sx={{ background: currentTheme.cardBackground }}>
+              <CardContent>
+                <Typography variant="h6" fontWeight={700} gutterBottom>
+                  Mening maqsadlarim
+                </Typography>
+                {recentGoals.length > 0 ? (
+                  <Grid container spacing={2}>
+                    {recentGoals.map((goal, index) => (
+                      <Grid item xs={12} md={6} key={index}>
+                        <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
+                          <Typography variant="subtitle2" fontWeight={600} gutterBottom>
                             {goal.title}
                           </Typography>
-                          <Stack direction="row" spacing={1}>
-                            <Chip 
-                              label={`${goal.daysLeft} kun qoldi`}
-                              size="small"
-                              color={getPriorityColor(goal.priority)}
-                              variant="outlined"
-                            />
-                          </Stack>
-                        </Box>
-                        <Box textAlign="right">
-                          <Typography variant="h6" color="primary" fontWeight={700}>
-                            {goal.current}/{goal.target}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {Math.round((goal.current / goal.target) * 100)}%
-                          </Typography>
-                        </Box>
-                      </Stack>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={(goal.current / goal.target) * 100}
-                        color={getPriorityColor(goal.priority)}
-                        sx={{ height: 8, borderRadius: 4 }}
-                      />
-                    </Paper>
-                  </Grid>
-                ))}
-              </Grid>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Tasks Section */}
-        <Grid item xs={12} lg={6}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-                <AssignmentIcon sx={{ fontSize: 32, color: 'primary.main' }} />
-                <Typography variant="h5" fontWeight={700}>
-                  {t('my_tasks')}
-                </Typography>
-                <Chip 
-                  label={`${userStats.completedTasks}/${userStats.totalTasks}`}
-                  color="primary"
-                  variant="outlined"
-                />
-              </Stack>
-              
-              <List>
-                {tasks.map((task, index) => (
-                  <ListItem 
-                    key={task.id}
-                    sx={{ 
-                      mb: 1, 
-                      bgcolor: task.done ? 'success.50' : 'grey.50',
-                      borderRadius: 2,
-                      border: task.done ? '1px solid #4caf50' : '1px solid #e0e0e0'
-                    }}
-                  >
-                    <ListItemAvatar>
-                      <Avatar 
-                        sx={{ 
-                          bgcolor: task.done ? 'success.main' : 'warning.main',
-                          color: 'white'
-                        }}
-                      >
-                        {task.done ? <CheckCircleIcon /> : <ScheduleIcon />}
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={
-                        <Typography 
-                          variant="body1" 
-                          fontWeight={600}
-                          sx={{ 
-                            textDecoration: task.done ? 'line-through' : 'none',
-                            color: task.done ? 'text.secondary' : 'text.primary'
-                          }}
-                        >
-                          {task.title}
-                        </Typography>
-                      }
-                      secondary={
-                        <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
-                          <Chip 
-                            label={`${task.reward} ball`}
-                            size="small"
-                            color="primary"
-                            variant="filled"
+                          <LinearProgress
+                            variant="determinate"
+                            value={(goal.currentAmount / goal.targetAmount) * 100}
+                            sx={{
+                              mb: 1,
+                              height: 8,
+                              borderRadius: 4,
+                              '& .MuiLinearProgress-bar': {
+                                background: `linear-gradient(90deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`
+                              }
+                            }}
                           />
-                          <Chip 
-                            label={task.category}
-                            size="small"
-                            color={getDifficultyColor(task.difficulty)}
-                            variant="outlined"
-                          />
-                          {!task.done && (
+                          <Stack direction="row" justifyContent="space-between">
                             <Typography variant="caption" color="text.secondary">
-                              {task.timeLeft}
+                              {goal.currentAmount} / {goal.targetAmount} JunCoin
                             </Typography>
-                          )}
-                        </Stack>
-                      }
-                    />
-                    {!task.done && (
-                      <Button 
-                        variant="contained" 
-                        size="small"
-                        sx={{ ml: 2 }}
-                      >
-                        Bajarish
-                      </Button>
-                    )}
-                  </ListItem>
-                ))}
-              </List>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Achievements Section */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-                <CelebrationIcon sx={{ fontSize: 32, color: 'warning.main' }} />
-                <Typography variant="h6" fontWeight={700}>
-                  Yutuqlarim
-                </Typography>
-              </Stack>
-              
-              <Grid container spacing={2}>
-                {achievements.map((achievement, index) => (
-                  <Grid item xs={6} key={index}>
-                    <Paper 
-                      sx={{ 
-                        p: 2, 
-                        textAlign: 'center',
-                        bgcolor: achievement.earned ? 'warning.50' : 'grey.100',
-                        border: achievement.earned ? '2px solid #ffc107' : '1px solid #e0e0e0',
-                        opacity: achievement.earned ? 1 : 0.6
-                      }}
-                    >
-                      <Typography variant="h4" sx={{ mb: 1 }}>
-                        {achievement.icon}
-                      </Typography>
-                      <Typography 
-                        variant="body2" 
-                        fontWeight={600}
-                        color={achievement.earned ? 'text.primary' : 'text.secondary'}
-                      >
-                        {achievement.title}
-                      </Typography>
-                    </Paper>
+                            <Typography variant="caption" color={currentTheme.primary} fontWeight={600}>
+                              {Math.round((goal.currentAmount / goal.targetAmount) * 100)}%
+                            </Typography>
+                          </Stack>
+                        </Paper>
+                      </Grid>
+                    ))}
                   </Grid>
-                ))}
-              </Grid>
-            </CardContent>
-          </Card>
+                ) : (
+                  <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+                    Hozircha maqsadlar yo'q
+                  </Typography>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
+      </Container>
 
-        {/* Quick Stats */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" fontWeight={700} gutterBottom>
-                Tezkor statistika
-              </Typography>
-              
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'primary.main', color: 'white' }}>
-                    <Typography variant="h5" fontWeight={800}>
-                      {userStats.completedTasks}
-                    </Typography>
-                    <Typography variant="body2">
-                      Bajarilgan vazifalar
-                    </Typography>
-                  </Paper>
-                </Grid>
-                <Grid item xs={6}>
-                  <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'success.main', color: 'white' }}>
-                    <Typography variant="h5" fontWeight={800}>
-                      {goals.filter(g => (g.current / g.target) > 0.8).length}
-                    </Typography>
-                    <Typography variant="body2">
-                      Yaqin maqsadlar
-                    </Typography>
-                  </Paper>
-                </Grid>
-                <Grid item xs={6}>
-                  <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'warning.main', color: 'white' }}>
-                    <Typography variant="h5" fontWeight={800}>
-                      {achievements.filter(a => a.earned).length}
-                    </Typography>
-                    <Typography variant="body2">
-                      Yutuqlar
-                    </Typography>
-                  </Paper>
-                </Grid>
-                <Grid item xs={6}>
-                  <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'info.main', color: 'white' }}>
-                    <Typography variant="h5" fontWeight={800}>
-                      #{userStats.rank}
-                    </Typography>
-                    <Typography variant="body2">
-                      Reytingdagi o'rin
-                    </Typography>
-                  </Paper>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Container>
+      {/* Theme Selector Dialog */}
+      <ChildThemeSelector
+        open={showThemeSelector}
+        onClose={() => setShowThemeSelector(false)}
+        onThemeChange={handleThemeChange}
+      />
+
+      {/* Floating Action Button */}
+      <Fab
+        color="primary"
+        sx={{
+          position: 'fixed',
+          bottom: 24,
+          right: 24,
+          background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
+          '&:hover': {
+            background: `linear-gradient(135deg, ${currentTheme.secondary} 0%, ${currentTheme.accent} 100%)`,
+            transform: 'scale(1.1)'
+          }
+        }}
+        onClick={() => setShowThemeSelector(true)}
+      >
+        <PaletteIcon />
+      </Fab>
+    </Box>
   );
 };
 
 const ChildDashboard = () => {
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const user = getCurrentUser();
+    if (user) {
+      setCurrentUser({
+        ...user,
+        juncoin: getJunCoinBalance()
+      });
+    }
+  }, []);
+
+  const mockUser = currentUser || { 
+    name: 'Bola', 
+    avatar: '/images/user-def.png',
+    juncoin: getJunCoinBalance()
+  };
+
   return (
-    <MainLayout
-      user={mockUser}
-      role="child"
-      onLogout={() => window.location.href = '/uz/login'}
-      onNavigate={path => window.location.href = '/uz' + path}
-    >
-      <Routes>
-        <Route path="/" element={<ChildHome />} />
-        <Route path="/tasks" element={<div>Tasks page coming soon...</div>} />
-        <Route path="/goals" element={<div>Goals page coming soon...</div>} />
-        <Route path="/shop" element={<div>Shop page coming soon...</div>} />
-        <Route path="/history" element={<div>History page coming soon...</div>} />
-      </Routes>
-    </MainLayout>
+    <Routes>
+      <Route path="/" element={<ChildHome />} />
+      <Route path="/tasks" element={<ChildTasks />} />
+      <Route path="/goals" element={<div>Goals page coming soon...</div>} />
+      <Route path="/shop" element={<ChildShop />} />
+      <Route path="/history" element={<div>History page coming soon...</div>} />
+    </Routes>
   );
 };
 
